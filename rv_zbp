@@ -2,7 +2,6 @@ $import rv_zbb::andn
 $import rv_zbb::orn
 $import rv_zbb::xnor
 $import rv_zbe::pack
-packu 
 $import rv_zbe::packh
 $import rv_zbb::rol
 $import rv_zbb::ror
