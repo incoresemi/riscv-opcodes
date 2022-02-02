@@ -1,0 +1,6 @@
+$import rv_zbb::clz
+$import rv_zbt::fsr
+$import rv32_zbt::fsri
+$pseudo_op rev8.h rd rs1 rv32_zbp::grevi shamtw=0b01000
+$pseudo_op rev8 rd rs1 rv32_zbp::grevi shamtw=0b11111
+

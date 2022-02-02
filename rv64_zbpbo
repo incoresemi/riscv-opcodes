@@ -1,0 +1,3 @@
+$import rv64_zbt::fsrw
+$pseudo_op rev8.h rd rs1 rv64_zbp::grevi shamt=0b001000
+$pseudo_op rev rd rs1 rv64_zbp::grevi shamt=0b111111
