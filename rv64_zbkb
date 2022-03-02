@@ -1,0 +1,8 @@
+# TODO - confirm if below 2 instructions should be pseudo ops since zbp is not ratified
+$pseudo_op rev8 rd rs1 rv64_zbp::grevi shamt=0b111000
+$pseudo_op brev8 rd rs1 rv64_zbp::grevi shamt=0b000111
+$import rv64_zbb::rolw
+$import rv64_zbb::rorw
+$import rv64_zbb::roriw
+# TODO - confirm if importing the below 1 instruction from zbe is okay - since its not ratified.
+$import rv64_zbe::packw

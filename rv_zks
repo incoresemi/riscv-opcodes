@@ -1,0 +1,28 @@
+# import zbkb
+$import rv_zbb::rol
+$import rv_zbb::ror
+$import rv_zbb::rori
+$import rv_zbb::andn
+$import rv_zbb::orn
+$import rv_zbb::xnor
+# TODO - confirm if importing the below 2 instructions from zbe is okay - since its not ratified.
+$import rv_zbe::pack
+$import rv_zbe::packh
+
+#import zbkc
+$import rv_zbc::clmul
+$import rv_zbc::clmulh
+
+#import zbkx
+# TODO - confirm if below 4 instructions should be imported ops since zbp is not ratified
+$import rv_zbp::xperm4
+$import rv_zbp::xperm8
+
+# Scalar SM4 - RV32, RV64
+$import rv_zksed::sm4ed
+$import rv_zksed::sm4ks
+
+# Scalar SM3 - RV32, RV64
+$import rv_zksh::sm3p0
+$import rv_zksh::sm3p1
+

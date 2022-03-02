@@ -1,0 +1,7 @@
+# import zbkb
+# TODO - confirm if below 4 instructions should be pseudo ops since zbp is not ratified
+$pseudo_op rev8 rd rs1 rv32_zbp::grevi shamtw=0x18
+$pseudo_op brev8 rd rs1 rv32_zbp::grevi shamtw=0b00111
+$pseudo_op zip rd rs rv32_zbp::shfli shamtw4=0xF
+$pseudo_op unzip rd rs rv32_zbp::unshfli shamtw4=0xF
+

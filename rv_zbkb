@@ -1,0 +1,9 @@
+$import rv_zbb::rol
+$import rv_zbb::ror
+$import rv_zbb::rori
+$import rv_zbb::andn
+$import rv_zbb::orn
+$import rv_zbb::xnor
+# TODO - confirm if importing the below 2 instructions from zbe is okay - since its not ratified.
+$import rv_zbe::pack
+$import rv_zbe::packh
