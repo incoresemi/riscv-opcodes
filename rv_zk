@@ -21,7 +21,7 @@ $import rv_zbp::xperm8
 
 #import zbknh
 # Scalar SHA256 - RV32/RV64
-$import rv_znkh::sha256sum0
-$import rv_znkh::sha256sum1
-$import rv_znkh::sha256sig0
-$import rv_znkh::sha256sig1
+$import rv_zknh::sha256sum0
+$import rv_zknh::sha256sum1
+$import rv_zknh::sha256sig0
+$import rv_zknh::sha256sig1
