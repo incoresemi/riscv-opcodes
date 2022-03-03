@@ -1,0 +1,21 @@
+$pseudo_op frflags rd rv_zicsr::csrrs imm12=0x001 rs1=0
+$pseudo_op fsflags rd rs1 rv_zicsr::csrrw imm2=0x001
+$pseudo_op fsflagsi rd zimm rv_zicsr::csrrwi imm12=00x1
+$pseudo_op frrm rd rv_zicsr::csrrs imm12=0x002 rs1=0
+$pseudo_op fsrm rd rs1  rv_zicsr::csrrw imm12=0x002
+$pseudo_op fsrmi rd zimm rv_zicsr::csrrwi imm12=0x002
+$pseudo_op fscsr rd rs1 rv_zicsr::csrrw imm12=0x003
+$pseudo_op frcsr rd rv_zicsr::csrrs imm12=0x003 rs1=0
+$pseudo_op rdcycle rd rv_zicsr::csrrs imm12=0xC00 rs1=0
+$pseudo_op rdtime rd rv_zicsr::csrrs imm12=0xC01 rs1=0
+$pseudo_op rdinstret rd rv_zicsr::csrrs imm12=0xC02 rs1=0 
+$pseudo_op rdcycleh rd rv_zicsr::csrrs imm12=0xC80 rs1=0 
+$pseudo_op rdtimeh rd  rv_zicsr::csrrs imm12=0xC81 rs1=0
+$pseudo_op rdinstreth rd rv_zicsr::csrrs imm12=0xC82 rs1=0 
+
+$pseudo_op scall rv_i::ecall
+$pseudo_op sbreak rv_i::ebreak
+
+$pseudo_op fence.tso rv_i::fence fm=0b1000 pred=0b0011 suc=0b0011
+$pseudo_op pause rv_i::fence fm=0 pred=1 succ=0 rs1=0 rd=0 
+
