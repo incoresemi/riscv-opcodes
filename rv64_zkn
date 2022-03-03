@@ -12,8 +12,6 @@ $import rv64_zbe::packw
 # Scalar AES - RV64
 $import rv64_zkne::aes64esm
 $import rv64_zkne::aes64es
-$import rv64_zknd::aes64ks1i
-$import rv64_zknd::aes64ks
 
 #import zknd
 # Scalar AES - RV64
