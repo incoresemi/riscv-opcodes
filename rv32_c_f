@@ -1,0 +1,8 @@
+# quadrant 0
+c.flw rd_p rs1_p uimm7     1..0=0 15..13=3
+c.fsw rs1_p rs2_p uimm7    1..0=0 15..13=7
+
+#quadrant 2
+c.flwsp rd uimm8sp         1..0=2 15..13=3
+c.fswsp crs2 uimm8sp_s     1..0=2 15..13=7
+

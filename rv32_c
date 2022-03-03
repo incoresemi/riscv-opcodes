@@ -1,0 +1,4 @@
+# quadrant 1
+c.jal imm12c              1..0=1 15..13=1
+c.srli rd_rs1_p nzuimm5   1..0=1 15..13=4 12..10=0
+c.srai rd_rs1_p nzuimm5   1..0=1 15..13=4 12..10=1

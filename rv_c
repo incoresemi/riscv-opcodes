@@ -1,0 +1,32 @@
+# quadrant 0
+c.addi4spn rd_p nzuimm10  1..0=0 15..13=0
+c.lw rd_p rs1_p uimm7     1..0=0 15..13=2
+c.sw rs1_p rs2_p uimm7    1..0=0 15..13=6
+
+#quadrant 1
+c.nop nzimm6              1..0=1 15..13=0 11..7=0
+c.addi rd_rs1_n0 nzimm6   1..0=1 15..13=0
+c.li rd imm6              1..0=1 15..13=2
+c.addi16spn nzimm10       1..0=1 15..13=3 11..7=2
+c.lui rd_n1 nzimm18       1..0=1 15..13=3
+c.andi rd_rs1_p imm6      1..0=1 15..13=4 11..10=2
+c.sub rd_rs1_p rs2_p      1..0=1 15..13=4 12..10=0b011 6..5=0
+c.xor rd_rs1_p rs2_p      1..0=1 15..13=4 12..10=0b011 6..5=1
+c.or rd_rs1_p rs2_p       1..0=1 15..13=4 12..10=0b011 6..5=2
+c.and rd_rs1_p rs2_p      1..0=1 15..13=4 12..10=0b011 6..5=3
+c.j imm12c                1..0=1 15..13=5
+c.beqz rs1_p imm9branch   1..0=1 15..13=6
+c.bnez rs1_p imm9branch   1..0=1 15..13=7
+
+#quadrant 2
+c.lwsp rd_n0 uimm8sp      1..0=2 15..13=2
+c.jr rs1_n0               1..0=2 15..13=4 12=0 6..2=0
+c.mv rd crs2_n0           1..0=2 15..13=4               
+c.ebreak                  1..0=2 15..13=4 12=1 11..2=0
+c.jalr crs1_n0            1..0=2 15..13=4 12=1 6..2=0
+c.add rd_rs1_n0 crs2_n0   1..0=2 15..13=4 12=1 
+c.swsp crs2 uimm8sp_s     1..0=2 15..13=6
+
+
+
+
