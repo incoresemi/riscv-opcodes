@@ -1,4 +1,4 @@
-$pseudo_op zext.h rd rs1 rv32_zbe::pack rs2=0 
+$pseudo_op zext.h rd rs1 rv_zbe::pack rs2=0 
 $pseudo_op rev8 rd rs1 rv32_zbp::grevi shamtw=0x18
 $pseudo_op orc.b rd rs1 rv32_zbp::gorci shamtw=0b00111
 
