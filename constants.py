@@ -1,9 +1,8 @@
 import re
 
+
 isa_regex = \
 re.compile("^RV(32|64|128)[IE]+[ABCDEFGHJKLMNPQSTUVX]*(Zicsr|Zifencei|Zihintpause|Zam|Ztso|Zkne|Zknd|Zknh|Zkse|Zksh|Zkg|Zkb|Zkr|Zks|Zkn|Zba|Zbc|Zbb|Zbp|Zbr|Zbm|Zbs|Zbe|Zbf|Zbt|Zmmul|Zbpbo){,1}(_Zicsr){,1}(_Zifencei){,1}(_Zihintpause){,1}(_Zmmul){,1}(_Zam){,1}(_Zba){,1}(_Zbb){,1}(_Zbc){,1}(_Zbe){,1}(_Zbf){,1}(_Zbm){,1}(_Zbp){,1}(_Zbpbo){,1}(_Zbr){,1}(_Zbs){,1}(_Zbt){,1}(_Zkb){,1}(_Zkg){,1}(_Zkr){,1}(_Zks){,1}(_Zkn){,1}(_Zknd){,1}(_Zkne){,1}(_Zknh){,1}(_Zkse){,1}(_Zksh){,1}(_Ztso){,1}$")
-
-ranges = re.compile(r'(?P<hit>\d+[(\.\.\d+)]*=\d[\w]*)', re.M)
 
 # regex to find <msb>..<lsb>=<val> patterns in instruction
 fixed_ranges = re.compile(
@@ -16,9 +15,10 @@ single_fixed = re.compile('(?:^|[\s])(?P<lsb>\d+)=(?P<value>[\w]*)((?=\s|$))', r
 # regex to find the overloading condition variable
 var_regex = re.compile('(?P<var>[a-zA-Z][\w\d]*)\s*=\s*.*?[\s$]*', re.M)
 
-# regex for pseudo op instructions
+# regex for pseudo op instructions returns the dependent filename, dependent
+# instruction, the pseudo op name and the encoding string
 pseudo_regex = re.compile(
-    '^\$pseudo_op\s+(?P<mnemonic>.*)\s+(?P<filename>rv[\d]*_[\w].*)::\s*(?P<orig_inst>.*?)[\s](?P<overload>.*)$'
+    '^\$pseudo_op\s+(?P<filename>rv[\d]*_[\w].*)::\s*(?P<orig_inst>.*?)\s+(?P<pseudo_inst>.*?)\s+(?P<overload>.*)$'
 , re.M)
 
 
@@ -408,6 +408,8 @@ csrs32 = [
   (0xB9F, 'mhpmcounter31h'),
 ]
 
+# look up table of position of various arguments that are used by the
+# instructions in the encoding files.
 arg_lut = {}
 arg_lut['rd'] = (11, 7)
 arg_lut['rt'] = (19, 15)  # source+dest register address. Overlaps rs1.
@@ -445,6 +447,20 @@ arg_lut['imm6'] = (25, 20)
 arg_lut['zimm'] = (19, 15)
 arg_lut['opcode'] = (6,0)
 arg_lut['funct7'] = (31,25)
+
+# for vectors
+arg_lut['vd'] = (11, 7)
+arg_lut['vs3'] = (11, 7)
+arg_lut['vs1'] = (19, 15)
+arg_lut['vs2'] = (24, 20)
+arg_lut['vm'] = (25, 25)
+arg_lut['wd'] = (26, 26)
+arg_lut['amoop'] = (31, 27)
+arg_lut['nf'] = (31, 29)
+arg_lut['simm5'] = (19, 15)
+arg_lut['zimm10'] = (29, 20)
+arg_lut['zimm11'] = (30, 20)
+
 
 #compressed immediates and fields
 arg_lut['c_nzuimm10'] = (12,5)
@@ -491,19 +507,8 @@ arg_lut['c_rs2_n0'] = (6,2)
 arg_lut['c_rs1_n0'] = (11,7)
 arg_lut['c_rs2'] = (6,2)
 
-# for vectors
-arg_lut['vd'] = (11, 7)
-arg_lut['vs3'] = (11, 7)
-arg_lut['vs1'] = (19, 15)
-arg_lut['vs2'] = (24, 20)
-arg_lut['vm'] = (25, 25)
-arg_lut['wd'] = (26, 26)
-arg_lut['amoop'] = (31, 27)
-arg_lut['nf'] = (31, 29)
-arg_lut['simm5'] = (19, 15)
-arg_lut['zimm10'] = (29, 20)
-arg_lut['zimm11'] = (30, 20)
-
+# dictionary containing the mapping of the argument to the what the fields in
+# the latex table should be
 latex_mapping = {}
 latex_mapping['imm12'] = 'imm[11:0]'
 latex_mapping['rs1'] = 'rs1'
@@ -559,6 +564,8 @@ latex_mapping['c_uimm9sphi'] = 'uimm[5]'
 latex_mapping['c_uimm10sp_s'] = 'uimm[5:4$\\vert$9:6]'
 latex_mapping['c_uimm9sp_s'] = 'uimm[5:3$\\vert$8:6]'
 
+# created a dummy instruction-dictionary like dictionary for all the instruction
+# types so that the same logic can be used to create their tables
 latex_inst_type = {}
 latex_inst_type['R-type'] = {}
 latex_inst_type['R-type']['variable_fields'] = ['opcode', 'rd', 'funct3', \
@@ -579,6 +586,3 @@ latex_inst_type['J-type']['variable_fields'] = ['opcode', 'rd', 'jimm20']
 latex_inst_type['R4-type'] = {}
 latex_inst_type['R4-type']['variable_fields'] = ['opcode', 'rd', 'funct3', \
         'rs1', 'rs2', 'funct2', 'rs3']
-
-#first_field=f'\\multicolumn{{size}}{{|c|}}{{name}} &'
-#other_field=f'\\multicolumn{{size}}{{c|}}{{name}} &'
