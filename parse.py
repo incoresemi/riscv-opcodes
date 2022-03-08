@@ -93,6 +93,10 @@ def process_enc_line(line, ext):
     match = "".join(encoding).replace('-','0')
     mask = "".join(encoding).replace('0','1').replace('-','0')
     args = single_fixed.sub(' ', args).split()
+    for a in args:
+        if a not in arg_lut:
+            logging.error(f' Found variable {a} in instruction {name} whose mapping in arg_lut does not exist')
+            raise SystemExit(1)
 
     # update the fields of the instruction
     single_dict['encoding'] = "".join(encoding)
@@ -121,8 +125,6 @@ def create_inst_dict(file_filter):
     # first pass if for standard/original instructions
     logging.debug('Collecting standard instructions first')
     for f in file_names:
-        if '_c' in f:
-            continue
         logging.debug(f'Parsing File: {f}')
         with open(f) as fp:
             lines = (line.rstrip()
@@ -134,7 +136,6 @@ def create_inst_dict(file_filter):
 
         # go through each line of the file
         for line in lines:
-            logging.debug(f'     Processing line: {line}')
             # if the an instruction needs to be imported then go to the
             # respective file and pick the line that has the instruction.
             # The variable 'line' will now point to the new line from the
@@ -143,6 +144,7 @@ def create_inst_dict(file_filter):
             # ignore all lines starting with $import and $pseudo
             if '$import' in line or '$pseudo' in line:
                 continue
+            logging.debug(f'     Processing line: {line}')
 
             (name, single_dict) = process_enc_line(line, f)
 
@@ -164,8 +166,6 @@ def create_inst_dict(file_filter):
     # second pass if for pseudo instructions
     logging.debug('Collecting pseudo instructions now')
     for f in file_names:
-        if '_c' in f:
-            continue
         logging.debug(f'Parsing File: {f}')
         with open(f) as fp:
             lines = (line.rstrip()
@@ -183,14 +183,14 @@ def create_inst_dict(file_filter):
             # imported file
 
             # ignore all lines starting with $import and $pseudo
-            if '$pseudo_op' not in line:
+            if '$pseudo' not in line:
                 continue
             logging.debug(f'     Processing line: {line}')
 
             (ext, line) = re.findall(r'^\$pseudo_op\s*(?P<ext>rv.*)\s*::\s*(?P<inst>.*)$', line)[0]
             [orig_inst, line] = line.split(' ', 1)
                 
-            if orig_inst not in filtered_inst:
+            if orig_inst.replace('.','_') not in filtered_inst:
                 (name, single_dict) = process_enc_line(line, f)
 
                 # if an instruction has already been added to the filtered instruction dictionary
@@ -209,49 +209,71 @@ def create_inst_dict(file_filter):
                 filtered_inst[name] = single_dict
     return filtered_inst
 
+def make_priv_latex_table():
+    latex_file = open('priv-instr-table.tex','w')
+    type_list = ['R-type','I-type']
+    system_instr = ['_h','_s','_system','_svinval', '64_h']
+    dataset_list = [ (system_instr, 'Trap-Return Instructions',['sret','mret']) ]
+    dataset_list.append((system_instr, 'Interrupt-Management Instructions',['wfi']))
+    dataset_list.append((system_instr, 'Supervisor Memory-Management Instructions',['sfence_vma']))
+    dataset_list.append((system_instr, 'Hypervisor Memory-Management Instructions',['hfence_vvma', 'hfence_gvma']))
+    dataset_list.append((system_instr, 'Hypervisor Virtual-Machine Load and Store Instructions', ['hlv_b','hlv_bu', 'hlv_h','hlv_hu', 'hlv_w', 'hlvx_hu', 'hlvx_wu', 'hsv_b', 'hsv_h','hsv_w']))
+    dataset_list.append((system_instr, 'Hypervisor Virtual-Machine Load and Store Instructions, RV64 only', ['hlv_wu','hlv_d','hsv_d']))
+    dataset_list.append((system_instr, 'Svinval Memory-Management Instructions', ['sinval_vma', 'sfence_w_inval','sfence_inval_ir', 'hinval_vvma','hinval_gvma']))
+    caption = '\\caption{RISC-V Privileged Instructions}'
+    make_ext_latex_table(type_list, dataset_list, latex_file, 32, caption)
+
+    latex_file.close()
+
 def make_latex_table():
     latex_file = open('instr-table.tex','w')
-    latex_file.close()
-    
+    caption = ''
     type_list = ['R-type','I-type','S-type','B-type','U-type','J-type']
-    dataset_list = [(['_i','32_i'], 'RV32I Base Instruction Set')]
-    make_ext_latex_table(type_list, dataset_list)
+    dataset_list = [(['_i','32_i'], 'RV32I Base Instruction Set', [])]
+    make_ext_latex_table(type_list, dataset_list, latex_file, 32, caption)
 
     type_list = ['R-type','I-type','S-type']
-    dataset_list = [(['64_i'], 'RV64I Base Instruction Set (in addition to RV32I)')]
-    dataset_list.append((['_zifencei'], 'RV32/RV64 Zifencei Standard Extension'))
-    dataset_list.append((['_zicsr'], 'RV32/RV64 Zicsr Standard Extension'))
-    dataset_list.append((['_m','32_m'], 'RV32M Standard Extension'))
-    dataset_list.append((['64_m'],'RV64M Standard Extension (in addition to RV32M)'))
-    make_ext_latex_table(type_list, dataset_list)
+    dataset_list = [(['64_i'], 'RV64I Base Instruction Set (in addition to RV32I)', [])]
+    dataset_list.append((['_zifencei'], 'RV32/RV64 Zifencei Standard Extension', []))
+    dataset_list.append((['_zicsr'], 'RV32/RV64 Zicsr Standard Extension', []))
+    dataset_list.append((['_m','32_m'], 'RV32M Standard Extension', []))
+    dataset_list.append((['64_m'],'RV64M Standard Extension (in addition to RV32M)', []))
+    make_ext_latex_table(type_list, dataset_list, latex_file, 32, caption)
 
     type_list = ['R-type']
-    dataset_list = [(['_a'],'RV32A Standard Extension')]
-    dataset_list.append((['64_a'],'RV64A Standard Extension (in addition to RV32A)'))
-    make_ext_latex_table(type_list, dataset_list)
+    dataset_list = [(['_a'],'RV32A Standard Extension', [])]
+    dataset_list.append((['64_a'],'RV64A Standard Extension (in addition to RV32A)', []))
+    make_ext_latex_table(type_list, dataset_list, latex_file, 32, caption)
     
     type_list = ['R-type','R4-type','I-type','S-type']
-    dataset_list = [(['_f'],'RV32F Standard Extension')]
-    dataset_list.append((['64_f'],'RV64F Standard Extension (in addition to RV32F)'))
-    make_ext_latex_table(type_list, dataset_list)
+    dataset_list = [(['_f'],'RV32F Standard Extension', [])]
+    dataset_list.append((['64_f'],'RV64F Standard Extension (in addition to RV32F)', []))
+    make_ext_latex_table(type_list, dataset_list, latex_file, 32, caption)
 
     type_list = ['R-type','R4-type','I-type','S-type']
-    dataset_list = [(['_d'],'RV32D Standard Extension')]
-    dataset_list.append((['64_d'],'RV64D Standard Extension (in addition to RV32D)'))
-    make_ext_latex_table(type_list, dataset_list)
+    dataset_list = [(['_d'],'RV32D Standard Extension', [])]
+    dataset_list.append((['64_d'],'RV64D Standard Extension (in addition to RV32D)', []))
+    make_ext_latex_table(type_list, dataset_list, latex_file, 32, caption)
     
     type_list = ['R-type','R4-type','I-type','S-type']
-    dataset_list = [(['_q'],'RV32Q Standard Extension')]
-    dataset_list.append((['64_q'],'RV64Q Standard Extension (in addition to RV32Q)'))
-    make_ext_latex_table(type_list, dataset_list)
+    dataset_list = [(['_q'],'RV32Q Standard Extension', [])]
+    dataset_list.append((['64_q'],'RV64Q Standard Extension (in addition to RV32Q)', []))
+    make_ext_latex_table(type_list, dataset_list, latex_file, 32, caption)
 
+    caption = '\\caption{Instruction listing for RISC-V}'
     type_list = ['R-type','R4-type','I-type','S-type']
-    dataset_list = [(['_zfh', '_d_zfh','_q_zfh'],'RV32Zfh Standard Extension')]
-    dataset_list.append((['64_zfh'],'RV64Zfh Standard Extension (in addition to RV32Zfh)'))
-    make_ext_latex_table(type_list, dataset_list)
+    dataset_list = [(['_zfh', '_d_zfh','_q_zfh'],'RV32Zfh Standard Extension', [])]
+    dataset_list.append((['64_zfh'],'RV64Zfh Standard Extension (in addition to RV32Zfh)', []))
+    make_ext_latex_table(type_list, dataset_list, latex_file, 32, caption)
+    
+    #type_list = ['']
+    #dataset_list = [(['_c', '32_c', '32_c_f','_c_d'],'RV32C Standard Extension', [])]
+    #dataset_list.append((['64_c'],'RV64C Standard Extension (in addition to RV32C)', []))
+    #make_ext_latex_table(type_list, dataset_list, latex_file, 16, caption)
 
-def make_ext_latex_table(type_list, dataset):
-    column_size = "".join(['p{0.002in}']*33)
+    latex_file.close()
+def make_ext_latex_table(type_list, dataset, latex_file, ilen, caption):
+    column_size = "".join(['p{0.002in}']*(ilen+1))
 
     type_entries = '''
     \\multicolumn{3}{l}{31} & 
@@ -269,7 +291,26 @@ def make_ext_latex_table(type_list, dataset):
     \\multicolumn{6}{l}{6} & 
     \\multicolumn{1}{r}{0} \\\\
     \\cline{2-33}\n& \n\n
+''' if ilen == 32 else '''
+    \\multicolumn{1}{c}{15} & 
+    \\multicolumn{1}{c}{14} & 
+    \\multicolumn{1}{c}{13} &
+    \\multicolumn{1}{c}{12} &
+    \\multicolumn{1}{c}{11} &
+    \\multicolumn{1}{c}{10} &
+    \\multicolumn{1}{c}{9} &
+    \\multicolumn{1}{c}{8} &
+    \\multicolumn{1}{c}{7} &
+    \\multicolumn{1}{c}{6} &
+    \\multicolumn{1}{c}{5} &
+    \\multicolumn{1}{c}{4} &
+    \\multicolumn{1}{c}{3} & 
+    \\multicolumn{1}{c}{2} & 
+    \\multicolumn{1}{c}{1} & 
+    \\multicolumn{1}{c}{0} \\\\
+    \\cline{2-17}\n& \n\n
 '''
+
     type_dict = {key: value for key, value in latex_inst_type.items() if key in type_list}
     content = ''
     for t in type_dict:
@@ -279,14 +320,13 @@ def make_ext_latex_table(type_list, dataset):
             name = f if f not in latex_mapping else latex_mapping[f]
             fields.append((msb, lsb, name))
 
-        index = 0
-        msb = 31
+        msb = ilen - 1
         y = ''
-        for r in range(0,32):
+        for r in range(0,ilen):
             if y != '':
-                fields.append((msb,31-r+1,y))
+                fields.append((msb,ilen-1-r+1,y))
                 y = ''
-            msb = 31-r-1
+            msb = ilen-1-r-1
             if r == 31:
                 if y != '':
                     fields.append((msb, 0, y))
@@ -302,14 +342,14 @@ def make_ext_latex_table(type_list, dataset):
                 entry += f'\\multicolumn{{ {msb- lsb + 1} }}{{|c|}}{{ {name} }} &\n'
             else:
                 entry += f'\\multicolumn{{ {msb -lsb + 1} }}{{c|}}{{ {name} }} &\n'
-        entry += '\\cline{2-33}\n&\n\n'
+        entry += f'\\cline{{2-{ilen+1}}}\n&\n\n'
         type_entries += entry
 
-    for (ext_list, title) in dataset:
+    for (ext_list, title, filter_list) in dataset:
         filtered_inst = {}
         for e in ext_list:
             filtered_inst.update(create_inst_dict(e))
-        inst_list = list(filtered_inst.keys())
+        inst_list = list(filtered_inst.keys()) if not filter_list else filter_list
         instr_entries=''
         for inst in inst_list:
             if inst not in filtered_inst:
@@ -317,27 +357,32 @@ def make_ext_latex_table(type_list, dataset):
                 raise SystemExit(1)
             fields = []
             for f in filtered_inst[inst]['variable_fields']:
+                if f not in arg_lut:
+                    logging.error(f'Found variable {f} in instruction {inst} whose mapping is not available')
+                    raise SystemExit(1)
                 (msb,lsb) = arg_lut[f]
-                name = f if f not in latex_mapping else latex_mapping[f]
+                name = f.replace('_','.') if f not in latex_mapping else latex_mapping[f]
                 fields.append((msb, lsb, name))
 
-            index = 0
-            msb = 31
+            msb = ilen -1
             y = ''
-            for r in range(0,32):
-                x = filtered_inst[inst]['encoding'][r]
+            for r in range(0,ilen):
+                if ilen == 16:
+                    encoding = filtered_inst[inst]['encoding'][16:]
+                else:
+                    encoding = filtered_inst[inst]['encoding']
+                x = encoding [r]
                 if x == '-':
                     if y != '':
-                        fields.append((msb,31-r+1,y))
+                        fields.append((msb,ilen-1-r+1,y))
                         y = ''
-                    msb = 31-r-1
+                    msb = ilen-1-r-1
                 else:
                     y += str(x)
-                if r == 31:
+                if r == ilen-1:
                     if y != '':
                         fields.append((msb, 0, y))
                     y = ''
-
             fields.sort(key=lambda y: y[0], reverse=True)
             entry = ''
             for r in range(len(fields)):
@@ -348,16 +393,16 @@ def make_ext_latex_table(type_list, dataset):
                     entry += f'\\multicolumn{{ {msb- lsb + 1} }}{{|c|}}{{ {name} }} &\n'
                 else:
                     entry += f'\\multicolumn{{ {msb -lsb + 1} }}{{c|}}{{ {name} }} &\n'
-            entry += '\\cline{2-33}\n&\n\n'
+            entry += f'\\cline{{2-{ilen+1}}}\n&\n\n'
             if inst in latex_inst_type:
                 type_entries += entry
             else:
                 instr_entries += entry
         content += f'''
 
-\\multicolumn{{32}}{{c}}{{}} & \\\\
-\\multicolumn{{32}}{{c}}{{\\bf {title} }} & \\\\
-\\cline{{2-33}}
+\\multicolumn{{{ilen}}}{{c}}{{}} & \\\\
+\\multicolumn{{{ilen}}}{{c}}{{\\bf {title} }} & \\\\
+\\cline{{2-{ilen+1}}}
 
             &
 {instr_entries}
@@ -371,7 +416,7 @@ def make_ext_latex_table(type_list, dataset):
 \\begin{{small}}
 \\begin{{center}}
     \\begin{{tabular}} {{{column_size}l}}
-    {" ".join(['&']*32)} \\\\
+    {" ".join(['&']*ilen)} \\\\
 
             &
 {type_entries}
@@ -381,11 +426,10 @@ def make_ext_latex_table(type_list, dataset):
 \\end{{tabular}}
 \\end{{center}}
 \\end{{small}}
+{caption}
 \\end{{table}}
 '''
-    latex_file = open('instr-table.tex','a')
     latex_file.write(header+content+endtable)
-    latex_file.close()
     
    
 def make_chisel(filtered_inst):
@@ -528,3 +572,4 @@ if __name__ == "__main__":
     make_sverilog(filtered_inst)
     make_rust(filtered_inst)
     make_latex_table()
+    make_priv_latex_table()
