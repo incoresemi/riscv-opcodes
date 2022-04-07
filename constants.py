@@ -571,6 +571,9 @@ latex_inst_type = {}
 latex_inst_type['R-type'] = {}
 latex_inst_type['R-type']['variable_fields'] = ['opcode', 'rd', 'funct3', \
         'rs1', 'rs2', 'funct7']
+latex_inst_type['R4-type'] = {}
+latex_inst_type['R4-type']['variable_fields'] = ['opcode', 'rd', 'funct3', \
+        'rs1', 'rs2', 'funct2', 'rs3']
 latex_inst_type['I-type'] = {}
 latex_inst_type['I-type']['variable_fields'] = ['opcode', 'rd', 'funct3', \
         'rs1', 'imm12']
@@ -584,9 +587,6 @@ latex_inst_type['U-type'] = {}
 latex_inst_type['U-type']['variable_fields'] = ['opcode', 'rd', 'imm20']
 latex_inst_type['J-type'] = {}
 latex_inst_type['J-type']['variable_fields'] = ['opcode', 'rd', 'jimm20']
-latex_inst_type['R4-type'] = {}
-latex_inst_type['R4-type']['variable_fields'] = ['opcode', 'rd', 'funct3', \
-        'rs1', 'rs2', 'funct2', 'rs3']
 latex_fixed_fields = []
 latex_fixed_fields.append((31,25))
 latex_fixed_fields.append((24,20))

@@ -336,6 +336,7 @@ def make_latex_table():
     caption = ''
     type_list = ['R-type','I-type','S-type','B-type','U-type','J-type']
     dataset_list = [(['_i','32_i'], 'RV32I Base Instruction Set', [])]
+    dataset_list.append((['_pseudo'], '', ['fence_tso', 'pause']))
     make_ext_latex_table(type_list, dataset_list, latex_file, 32, caption)
 
     type_list = ['R-type','I-type','S-type']
@@ -590,13 +591,18 @@ def make_ext_latex_table(type_list, dataset, latex_file, ilen, caption):
 
         # once an entry of the dataset is completed we create the whole table
         # with the title of that dataset as sub-heading (sort-of)
-        content += f'''
+        if title != '':
+            content += f'''
 
 \\multicolumn{{{ilen}}}{{c}}{{}} & \\\\
 \\multicolumn{{{ilen}}}{{c}}{{\\bf {title} }} & \\\\
 \\cline{{2-{ilen+1}}}
 
             &
+{instr_entries}
+'''
+        else:
+            content += f'''
 {instr_entries}
 '''
 
