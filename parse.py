@@ -175,11 +175,12 @@ def create_inst_dict(file_filter):
 
     '''
     opcodes_dir = f'./'
-    filtered_inst = {}
+    instr_dict = {}
 
     # file_names contains all files to be parsed in the riscv-opcodes directory
-    file_names = glob.glob(f'{opcodes_dir}rv{file_filter}')
-    file_names += glob.glob(f'{opcodes_dir}unratified/rv{file_filter}')
+    file_names = []
+    for fil in file_filter:
+        file_names += glob.glob(f'{opcodes_dir}{fil}')
 
     # first pass if for standard/original instructions
     logging.debug('Collecting standard instructions first')
@@ -212,18 +213,18 @@ def create_inst_dict(file_filter):
             # if an instruction has already been added to the filtered 
             # instruction dictionary throw an error saying the given 
             # instruction is already imported and raise SystemExit
-            if name in filtered_inst:
-                var = filtered_inst[name]["extension"]
-                if filtered_inst[name]['encoding'] != single_dict['encoding']:
+            if name in instr_dict:
+                var = instr_dict[name]["extension"]
+                if instr_dict[name]['encoding'] != single_dict['encoding']:
                     err_msg = f'instruction : {name} from '
                     err_msg += f'{f.split("/")[-1]} is already '
                     err_msg += f'added from {var} but each have different encodings for the same instruction'
                     logging.error(err_msg)
                     raise SystemExit(1)
-                filtered_inst[name]['extension'].append(single_dict['extension'])
+                instr_dict[name]['extension'].append(single_dict['extension'])
 
             # update the final dict with the instruction
-            filtered_inst[name] = single_dict
+            instr_dict[name] = single_dict
     
     # second pass if for pseudo instructions
     logging.debug('Collecting pseudo instructions now')
@@ -276,15 +277,15 @@ def create_inst_dict(file_filter):
 
             # add the pseudo_op to the dictionary only if the original
             # instruction is not already in the dictionary.    
-            if orig_inst.replace('.','_') not in filtered_inst:
+            if orig_inst.replace('.','_') not in instr_dict:
                 (name, single_dict) = process_enc_line(pseudo_inst + ' ' + line, f)
 
                 # update the final dict with the instruction
-                if name not in filtered_inst:
-                    filtered_inst[name] = single_dict
+                if name not in instr_dict:
+                    instr_dict[name] = single_dict
             else:
                 logging.debug(f'Skipping pseudo_op {pseudo_inst} since original instruction {orig_inst} already selected in list')
-    return filtered_inst
+    return instr_dict
 
 def make_priv_latex_table():
     latex_file = open('priv-instr-table.tex','w')
@@ -522,29 +523,29 @@ def make_ext_latex_table(type_list, dataset, latex_file, ilen, caption):
     # for each entry in the dataset create a table
     content = ''
     for (ext_list, title, filter_list) in dataset:
-        filtered_inst = {}
+        instr_dict = {}
 
         # for all extensions list in ext_list, create a dictionary of
         # instructions associated with those extensions.
         for e in ext_list:
-            filtered_inst.update(create_inst_dict(e))
+            instr_dict.update(create_inst_dict(['rv'+e]))
 
         # if filter_list is not empty then use that as the official set of
         # instructions that need to be dumped into the latex table
-        inst_list = list(filtered_inst.keys()) if not filter_list else filter_list
+        inst_list = list(instr_dict.keys()) if not filter_list else filter_list
 
         # for each instruction create an latex table entry just like how we did
         # above with the instruction-type table.
         instr_entries = ''
         for inst in inst_list:
-            if inst not in filtered_inst:
-                logging.error(f'in make_ext_latex_table: Instruction: {inst} not found in filtered_inst dict')
+            if inst not in instr_dict:
+                logging.error(f'in make_ext_latex_table: Instruction: {inst} not found in instr_dict')
                 raise SystemExit(1)
             fields = []
 
             # only if the argument is available in arg_lut we consume it, else
             # throw error.
-            for f in filtered_inst[inst]['variable_fields']:
+            for f in instr_dict[inst]['variable_fields']:
                 if f not in arg_lut:
                     logging.error(f'Found variable {f} in instruction {inst} whose mapping is not available')
                     raise SystemExit(1)
@@ -555,9 +556,9 @@ def make_ext_latex_table(type_list, dataset, latex_file, ilen, caption):
             msb = ilen -1
             y = ''
             if ilen == 16:
-                encoding = filtered_inst[inst]['encoding'][16:]
+                encoding = instr_dict[inst]['encoding'][16:]
             else:
-                encoding = filtered_inst[inst]['encoding']
+                encoding = instr_dict[inst]['encoding']
             for r in range(0,ilen):
                 x = encoding [r]
                 if ((msb, ilen-1-r+1)) in latex_fixed_fields:
@@ -631,13 +632,13 @@ def make_ext_latex_table(type_list, dataset, latex_file, ilen, caption):
     latex_file.write(header+content+endtable)
     
    
-def make_chisel(filtered_inst):
+def make_chisel(instr_dict):
 
     chisel_names=''
     cause_names_str=''
     csr_names_str = ''
-    for i in filtered_inst:
-        chisel_names += f'  def {i.upper().replace(".","_"):<18s} = BitPat("b{filtered_inst[i]["encoding"].replace("-","?")}")\n'
+    for i in instr_dict:
+        chisel_names += f'  def {i.upper().replace(".","_"):<18s} = BitPat("b{instr_dict[i]["encoding"].replace("-","?")}")\n'
     for num, name in causes:
         cause_names_str += f'  val {name.lower().replace(" ","_")} = {hex(num)}\n'
     cause_names_str += '''  val all = {
@@ -680,11 +681,11 @@ object CSRs {{
 ''')
     chisel_file.close()
 
-def make_rust(filtered_inst):
+def make_rust(instr_dict):
     mask_match_str= ''
-    for i in filtered_inst:
-        mask_match_str += f'const MATCH_{i.upper().replace(".","_")}: u32 = {(filtered_inst[i]["match"])};\n'
-        mask_match_str += f'const MASK_{i.upper().replace(".","_")}: u32 = {(filtered_inst[i]["mask"])};\n'
+    for i in instr_dict:
+        mask_match_str += f'const MATCH_{i.upper().replace(".","_")}: u32 = {(instr_dict[i]["match"])};\n'
+        mask_match_str += f'const MASK_{i.upper().replace(".","_")}: u32 = {(instr_dict[i]["mask"])};\n'
     for num, name in csrs+csrs32:
         mask_match_str += f'const CSR_{name.upper()}: u16 = {hex(num)};\n'
     for num, name in causes:
@@ -696,10 +697,10 @@ def make_rust(filtered_inst):
 ''')
     rust_file.close()
 
-def make_sverilog(filtered_inst):
+def make_sverilog(instr_dict):
     names_str = ''
-    for i in filtered_inst:
-        names_str += f"  localparam [31:0] {i.upper().replace('.','_'):<18s} = 32'b{filtered_inst[i]['encoding'].replace('-','?')};\n"
+    for i in instr_dict:
+        names_str += f"  localparam [31:0] {i.upper().replace('.','_'):<18s} = 32'b{instr_dict[i]['encoding'].replace('-','?')};\n"
     names_str += '  /* CSR Addresses */\n'
     for num, name in csrs+csrs32:
         names_str += f"  localparam logic [11:0] CSR_{name.upper()} = 12'h{hex(num)[2:]};\n"
@@ -712,12 +713,12 @@ package riscv_instr;
 endpackage
 ''')
     sverilog_file.close()
-def make_c(filtered_inst):
+def make_c(instr_dict):
     mask_match_str = ''
     declare_insn_str = ''
-    for i in filtered_inst:
-        mask_match_str += f'#define MATCH_{i.upper().replace(".","_")} {filtered_inst[i]["match"]}\n'
-        mask_match_str += f'#define MASK_{i.upper().replace(".","_")} {filtered_inst[i]["mask"]}\n'
+    for i in instr_dict:
+        mask_match_str += f'#define MATCH_{i.upper().replace(".","_")} {instr_dict[i]["match"]}\n'
+        mask_match_str += f'#define MASK_{i.upper().replace(".","_")} {instr_dict[i]["mask"]}\n'
         declare_insn_str += f'DECLARE_INSN({i.replace(".","_")}, MATCH_{i.upper().replace(".","_")}, MASK_{i.upper().replace(".","_")})\n'
 
     csr_names_str = ''
@@ -762,17 +763,17 @@ def make_c(filtered_inst):
     enc_file.close()
 
 if __name__ == "__main__":
-    filtered_inst = create_inst_dict('*')
-    with open('filtered_inst.yaml', 'w') as outfile:
-        yaml.dump(filtered_inst, outfile, default_flow_style=False)
-    filtered_inst = collections.OrderedDict(sorted(filtered_inst.items()))
-    make_c(filtered_inst)
+    instr_dict = create_inst_dict(['rv*','unratified/rv*'])
+    with open('instr_dict.yaml', 'w') as outfile:
+        yaml.dump(instr_dict, outfile, default_flow_style=False)
+    instr_dict = collections.OrderedDict(sorted(instr_dict.items()))
+    make_c(instr_dict)
     logging.info('encoding.out.h generated successfully')
-    make_chisel(filtered_inst)
+    make_chisel(instr_dict)
     logging.info('inst.chisel generated successfully')
-    make_sverilog(filtered_inst)
+    make_sverilog(instr_dict)
     logging.info('inst.sverilog generated successfully')
-    make_rust(filtered_inst)
+    make_rust(instr_dict)
     logging.info('inst.rs generated successfully')
     make_latex_table()
     logging.info('instr-table.tex generated successfully')

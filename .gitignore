@@ -8,6 +8,6 @@ inst.rs
 
 inst.sverilog
 
-filtered_inst.yaml
+instr_dict.yaml
 
 __pycache__/
