@@ -179,6 +179,7 @@ def create_inst_dict(file_filter):
 
     # file_names contains all files to be parsed in the riscv-opcodes directory
     file_names = glob.glob(f'{opcodes_dir}rv{file_filter}')
+    file_names += glob.glob(f'{opcodes_dir}unratified/rv{file_filter}')
 
     # first pass if for standard/original instructions
     logging.debug('Collecting standard instructions first')
@@ -252,8 +253,12 @@ def create_inst_dict(file_filter):
             # check if the file of the dependent extension exist. Throw error if
             # it doesn't
             if not os.path.exists(ext):
-                logging.error(f'Pseudo op {pseudo_inst} in {f} depends on {ext} which is not available')
-                raise SystemExit(1)
+                ext1 = f'unratified/{ext}'
+                if not os.path.exists(ext1):
+                    logging.error(f'Pseudo op {pseudo_inst} in {f} depends on {ext} which is not available')
+                    raise SystemExit(1)
+                else:
+                    ext = ext1
 
             # check if the dependent instruction exist in the dependent
             # extension. Else throw error.
@@ -274,18 +279,9 @@ def create_inst_dict(file_filter):
             if orig_inst.replace('.','_') not in filtered_inst:
                 (name, single_dict) = process_enc_line(pseudo_inst + ' ' + line, f)
 
-                if name in filtered_inst:
-                    var = filtered_inst[name]["extension"]
-                    if filtered_inst[name]['encoding'] != single_dict['encoding']:
-                        err_msg = f'instruction : {name} from '
-                        err_msg += f'{f.split("/")[-1]} is already '
-                        err_msg += f'added from {var} but each have different encodings for the same instruction'
-                        logging.error(err_msg)
-                        raise SystemExit(1)
-                    filtered_inst[name]['extension'].append(single_dict['extension'])
-
                 # update the final dict with the instruction
-                filtered_inst[name] = single_dict
+                if name not in filtered_inst:
+                    filtered_inst[name] = single_dict
             else:
                 logging.debug(f'Skipping pseudo_op {pseudo_inst} since original instruction {orig_inst} already selected in list')
     return filtered_inst
