@@ -553,12 +553,16 @@ def make_ext_latex_table(type_list, dataset, latex_file, ilen, caption):
 
             msb = ilen -1
             y = ''
+            if ilen == 16:
+                encoding = filtered_inst[inst]['encoding'][16:]
+            else:
+                encoding = filtered_inst[inst]['encoding']
             for r in range(0,ilen):
-                if ilen == 16:
-                    encoding = filtered_inst[inst]['encoding'][16:]
-                else:
-                    encoding = filtered_inst[inst]['encoding']
                 x = encoding [r]
+                if ((msb, ilen-1-r+1)) in latex_fixed_fields:
+                    fields.append((msb,ilen-1-r+1,y))
+                    msb = ilen-1-r
+                    y = ''
                 if x == '-':
                     if y != '':
                         fields.append((msb,ilen-1-r+1,y))
@@ -570,6 +574,7 @@ def make_ext_latex_table(type_list, dataset, latex_file, ilen, caption):
                     if y != '':
                         fields.append((msb, 0, y))
                     y = ''
+
             fields.sort(key=lambda y: y[0], reverse=True)
             entry = ''
             for r in range(len(fields)):

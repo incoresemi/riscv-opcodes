@@ -586,3 +586,10 @@ latex_inst_type['J-type']['variable_fields'] = ['opcode', 'rd', 'jimm20']
 latex_inst_type['R4-type'] = {}
 latex_inst_type['R4-type']['variable_fields'] = ['opcode', 'rd', 'funct3', \
         'rs1', 'rs2', 'funct2', 'rs3']
+latex_fixed_fields = []
+latex_fixed_fields.append((31,25))
+latex_fixed_fields.append((24,20))
+latex_fixed_fields.append((19,15))
+latex_fixed_fields.append((14,12))
+latex_fixed_fields.append((11,7))
+latex_fixed_fields.append((6,0))
