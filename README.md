@@ -194,4 +194,10 @@ DEBUG::      Processing line: beq     bimm12hi rs1 rs2 bimm12lo 14..12=0 6..2=0x
 DEBUG::      Processing line: bne     bimm12hi rs1 rs2 bimm12lo 14..12=1 6..2=0x18 1..0=3
 ```
 
+## How do I find where an instruction is defined?
+
+You can use `grep <pattern> rv* unratified/rv*` OR run `make` and open
+`instr_dict.yaml` and search of the instruction you are looking for. Within that
+instruction the `extension` field will indicate which file the instruction was
+picked from.
 
