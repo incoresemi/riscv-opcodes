@@ -71,6 +71,12 @@ Instruction syntaxes used in this project are broadly categorized into three:
   ```
   $pseudo_op rv_zicsr::csrrs frflags rd 19..15=0 31..20=0x001 14..12=2 6..2=0x1C 1..0=3
   ```
+
+  If a ratified instruction is a pseudo\_op of a regular unratified
+  instruction, it is recommended to maintain this pseudo\_op relationship i.e.
+  define the new instruction as a pseudo\_op of the unratified regular
+  instruction, as this avoids existence of overlapping opcodes for users who are
+  experimenting with unratified extensions as well.
   
 - **imported\_instructions** - these are instructions which are borrowed from an extension into a new/different extension/sub-extension. Only regular instructions can be imported. Pseudo-op instructions cannot be imported. Example:
   ```
