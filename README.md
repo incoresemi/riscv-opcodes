@@ -36,11 +36,11 @@ file-naming policy and location is as mentioned below:
 5. `unratified` - this directory will also contain files similar to the above policies, but will
    correspond to instructions which have not yet been ratified.
 
-When an instruction is present in multiple extensions and the spec is vague in defining the extension which owns the instruction, the instruction encoding must be placed in the first canonically ordered extension and should be `$imported` in the remaining extensions.
+When an instruction is present in multiple extensions and the spec is vague in defining the extension which owns the instruction, the instruction encoding must be placed in the first canonically ordered extension and should be imported(via the `$import` keyword) in the remaining extensions.
 
 ## Encoding Syntax
 
-The encoding syntax uses `$` to indicate keywords. As of now 2 keywords have been identified : `$imported` and `$pseudo_op` (described below). The syntax also uses `::` has a means to define the relationship between extension and instruction. `..` is used to defined bit ranges.
+The encoding syntax uses `$` to indicate keywords. As of now 2 keywords have been identified : `$import` and `$pseudo_op` (described below). The syntax also uses `::` as a means to define the relationship between extension and instruction. `..` is used to defined bit ranges.
 Instruction syntaxes used in this project are broadly categorized into three:
 
 - **regular instructions** :- these are instructions which hold a unique opcode in the encoding space. A very generic syntax guideline 
@@ -80,7 +80,7 @@ Instruction syntaxes used in this project are broadly categorized into three:
 The `parse.py` python file is used to perform checks on the current set of instruction encodings and also generates multiple artifacts : latex tables, encoding.h header file, etc. This section will provide a brief overview of the flow within the python file.
 
 To start with, `parse.py` creates a list of all `rv_*` files currently checked into the repo (including those inside the `unratified` directory as well). 
-It then starts parsing each file line by line. In the frirst pass, we only capture regular instructions and ignore the imported or pseudo instructions. 
+It then starts parsing each file line by line. In the first pass, we only capture regular instructions and ignore the imported or pseudo instructions. 
 For each regular instruction, the following checks are performed :
 
   - for range-assignment syntax, the *msb* position must be higher than the *lsb* position
