@@ -23,7 +23,7 @@ tools and projects like Spike, PK, RISC-V Manual, etc.
 ## File Naming Policy
 
 This project follows a very specific file structure to define the instruction encodings. All files
-containing instruction encodings start with the prefix `rv_`. These files can either be present in
+containing instruction encodings start with the prefix `rv`. These files can either be present in
 the root directory (if the instructions have been ratified) of the `unratified` directory. The exact
 file-naming policy and location is as mentioned below:
 
@@ -85,7 +85,7 @@ Instruction syntaxes used in this project are broadly categorized into three:
 
 The `parse.py` python file is used to perform checks on the current set of instruction encodings and also generates multiple artifacts : latex tables, encoding.h header file, etc. This section will provide a brief overview of the flow within the python file.
 
-To start with, `parse.py` creates a list of all `rv_*` files currently checked into the repo (including those inside the `unratified` directory as well). 
+To start with, `parse.py` creates a list of all `rv*` files currently checked into the repo (including those inside the `unratified` directory as well). 
 It then starts parsing each file line by line. In the first pass, we only capture regular instructions and ignore the imported or pseudo instructions. 
 For each regular instruction, the following checks are performed :
 
@@ -128,8 +128,8 @@ The following artifacts can be generated using parse.py:
 To generate all the above artifacts for all instructions currently checked in, simply run `make` from the root-directory. This should print the following log on the command-line:
 
 ```
-Running with args : ['./parse.py', '-c', '-chisel', '-sverilog', '-rust', '-latex', 'rv_*', 'unratified/rv_*']
-Extensions selected : ['rv_*', 'unratified/rv_*']
+Running with args : ['./parse.py', '-c', '-chisel', '-sverilog', '-rust', '-latex', 'rv*', 'unratified/rv*']
+Extensions selected : ['rv*', 'unratified/rv*']
 INFO:: encoding.out.h generated successfully
 INFO:: inst.chisel generated successfully
 INFO:: inst.sverilog generated successfully
@@ -164,11 +164,11 @@ You can use the `clean` target to remove all artifacts.
 
 ## Adding a new extension
 
-To add a new extension of instructions, create an appropriate `rv_` file based on the policy defined in [File Structure](#file-naming-policy). Run `make` from the root directory to ensure that all checks pass and all artifacts are created correctly. A successful run should print the following log on the terminal:
+To add a new extension of instructions, create an appropriate `rv*` file based on the policy defined in [File Structure](#file-naming-policy). Run `make` from the root directory to ensure that all checks pass and all artifacts are created correctly. A successful run should print the following log on the terminal:
 
 ```
-Running with args : ['./parse.py', '-c', '-chisel', '-sverilog', '-rust', '-latex', 'rv_*', 'unratified/rv_*']
-Extensions selected : ['rv_*', 'unratified/rv_*']
+Running with args : ['./parse.py', '-c', '-chisel', '-sverilog', '-rust', '-latex', 'rv*', 'unratified/rv*']
+Extensions selected : ['rv*', 'unratified/rv*']
 INFO:: encoding.out.h generated successfully
 INFO:: inst.chisel generated successfully
 INFO:: inst.sverilog generated successfully
