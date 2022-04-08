@@ -40,7 +40,9 @@ When an instruction is present in multiple extensions and the spec is vague in d
 
 ## Encoding Syntax
 
-The encoding syntax uses `$` to indicate keywords. As of now 2 keywords have been identified : `$import` and `$pseudo_op` (described below). The syntax also uses `::` as a means to define the relationship between extension and instruction. `..` is used to defined bit ranges.
+
+The encoding syntax uses `$` to indicate keywords. As of now 2 keywords have been identified : `$import` and `$pseudo_op` (described below). The syntax also uses `::` as a means to define the relationship between extension and instruction. `..` is used to defined bit ranges. We use `#` to define comments in the files. All comments must be in a separate line. In-line comments are not supported.
+
 Instruction syntaxes used in this project are broadly categorized into three:
 
 - **regular instructions** :- these are instructions which hold a unique opcode in the encoding space. A very generic syntax guideline 
@@ -71,7 +73,7 @@ Instruction syntaxes used in this project are broadly categorized into three:
   $pseudo_op rv_zicsr::csrrs frflags rd 19..15=0 31..20=0x001 14..12=2 6..2=0x1C 1..0=3
   ```
   
-- **imported\_instructions** - these are instructions which are borrowed from an extension into a new/different extension/sub-extension. Example:
+- **imported\_instructions** - these are instructions which are borrowed from an extension into a new/different extension/sub-extension. Only regular instructions can be imported. Psuedo-op instructions cannot be imported. Example:
   ```
   $import rv32_zkne::aes32esmi
   ```
@@ -99,7 +101,7 @@ The above dictionary elements are added to a main `instr_dict` dictionary under 
 instructions have been processed. In the second pass, we now process the `$pseudo_op` instructions. Here, we first check if the *base-instruction* of 
 this pseudo instruction exists in the relevant extension/filename or not. If it is present, the the remaining part of the syntax undergoes the same 
 checks as above. Once the checks pass and if the *base-instruction* is not already added to the main `instr_dict` then the pseudo-instruction is added to 
-the list. 
+the list. In the third, and final, pass we process the imported instructions.
 
 The case where the *base-instruction* for a pseudo-instruction may not be present in the main `instr_dict` after the first pass is if the only a subset 
 of extensions are being processed such that the *base-instruction* is not included. 
