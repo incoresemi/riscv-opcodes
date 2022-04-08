@@ -139,7 +139,7 @@ def process_enc_line(line, ext):
     return (name, single_dict)
 
 
-def create_inst_dict(file_filter):
+def create_inst_dict(file_filter, include_pseudo=False):
     '''
     This function return a dictionary containing all instructions associated
     with an extension defined by the file_filter input. The file_filter input
@@ -278,7 +278,7 @@ def create_inst_dict(file_filter):
 
             # add the pseudo_op to the dictionary only if the original
             # instruction is not already in the dictionary.    
-            if orig_inst.replace('.','_') not in instr_dict:
+            if orig_inst.replace('.','_') not in instr_dict or include_pseudo:
                 (name, single_dict) = process_enc_line(pseudo_inst + ' ' + line, f)
 
                 # update the final dict with the instruction
@@ -364,14 +364,14 @@ def make_priv_latex_table():
     latex_file = open('priv-instr-table.tex','w')
     type_list = ['R-type','I-type']
     system_instr = ['_h','_s','_system','_svinval', '64_h']
-    dataset_list = [ (system_instr, 'Trap-Return Instructions',['sret','mret']) ]
-    dataset_list.append((system_instr, 'Interrupt-Management Instructions',['wfi']))
-    dataset_list.append((system_instr, 'Supervisor Memory-Management Instructions',['sfence_vma']))
-    dataset_list.append((system_instr, 'Hypervisor Memory-Management Instructions',['hfence_vvma', 'hfence_gvma']))
+    dataset_list = [ (system_instr, 'Trap-Return Instructions',['sret','mret'], False) ]
+    dataset_list.append((system_instr, 'Interrupt-Management Instructions',['wfi'], False))
+    dataset_list.append((system_instr, 'Supervisor Memory-Management Instructions',['sfence_vma'], False))
+    dataset_list.append((system_instr, 'Hypervisor Memory-Management Instructions',['hfence_vvma', 'hfence_gvma'], False))
     dataset_list.append((system_instr, 'Hypervisor Virtual-Machine Load and Store Instructions', 
-        ['hlv_b','hlv_bu', 'hlv_h','hlv_hu', 'hlv_w', 'hlvx_hu', 'hlvx_wu', 'hsv_b', 'hsv_h','hsv_w']))
-    dataset_list.append((system_instr, 'Hypervisor Virtual-Machine Load and Store Instructions, RV64 only', ['hlv_wu','hlv_d','hsv_d']))
-    dataset_list.append((system_instr, 'Svinval Memory-Management Instructions', ['sinval_vma', 'sfence_w_inval','sfence_inval_ir', 'hinval_vvma','hinval_gvma']))
+        ['hlv_b','hlv_bu', 'hlv_h','hlv_hu', 'hlv_w', 'hlvx_hu', 'hlvx_wu', 'hsv_b', 'hsv_h','hsv_w'], False))
+    dataset_list.append((system_instr, 'Hypervisor Virtual-Machine Load and Store Instructions, RV64 only', ['hlv_wu','hlv_d','hsv_d'], False))
+    dataset_list.append((system_instr, 'Svinval Memory-Management Instructions', ['sinval_vma', 'sfence_w_inval','sfence_inval_ir', 'hinval_vvma','hinval_gvma'], False))
     caption = '\\caption{RISC-V Privileged Instructions}'
     make_ext_latex_table(type_list, dataset_list, latex_file, 32, caption)
 
@@ -402,49 +402,48 @@ def make_latex_table():
 
     # create the rv32i table first. Here we set the caption to empty. We use the
     # files rv_i and rv32_i to capture instructions relevant for rv32i
-    # configuration. The dataset is a list of 3-element tuples : 
-    # (list_of_extensions, title, list_of_instructions). If list_of_instructions 
+    # configuration. The dataset is a list of 4-element tuples : 
+    # (list_of_extensions, title, list_of_instructions, include_pseudo_ops). If list_of_instructions 
     # is empty then it indicates that all instructions of the all the extensions
     # in list_of_extensions need to be dumped. If not empty, then only the
     # instructions listed in list_of_instructions will be dumped into latex.
     caption = ''
     type_list = ['R-type','I-type','S-type','B-type','U-type','J-type']
-    dataset_list = [(['_i','32_i'], 'RV32I Base Instruction Set', [])]
-    dataset_list.append((['_pseudo'], '', ['fence_tso', 'pause']))
+    dataset_list = [(['_i','32_i'], 'RV32I Base Instruction Set', [], True)]
     make_ext_latex_table(type_list, dataset_list, latex_file, 32, caption)
 
     type_list = ['R-type','I-type','S-type']
-    dataset_list = [(['64_i'], 'RV64I Base Instruction Set (in addition to RV32I)', [])]
-    dataset_list.append((['_zifencei'], 'RV32/RV64 Zifencei Standard Extension', []))
-    dataset_list.append((['_zicsr'], 'RV32/RV64 Zicsr Standard Extension', []))
-    dataset_list.append((['_m','32_m'], 'RV32M Standard Extension', []))
-    dataset_list.append((['64_m'],'RV64M Standard Extension (in addition to RV32M)', []))
+    dataset_list = [(['64_i'], 'RV64I Base Instruction Set (in addition to RV32I)', [], False)]
+    dataset_list.append((['_zifencei'], 'RV32/RV64 Zifencei Standard Extension', [], False))
+    dataset_list.append((['_zicsr'], 'RV32/RV64 Zicsr Standard Extension', [], False))
+    dataset_list.append((['_m','32_m'], 'RV32M Standard Extension', [], False))
+    dataset_list.append((['64_m'],'RV64M Standard Extension (in addition to RV32M)', [], False))
     make_ext_latex_table(type_list, dataset_list, latex_file, 32, caption)
 
     type_list = ['R-type']
-    dataset_list = [(['_a'],'RV32A Standard Extension', [])]
-    dataset_list.append((['64_a'],'RV64A Standard Extension (in addition to RV32A)', []))
+    dataset_list = [(['_a'],'RV32A Standard Extension', [], False)]
+    dataset_list.append((['64_a'],'RV64A Standard Extension (in addition to RV32A)', [], False))
     make_ext_latex_table(type_list, dataset_list, latex_file, 32, caption)
     
     type_list = ['R-type','R4-type','I-type','S-type']
-    dataset_list = [(['_f'],'RV32F Standard Extension', [])]
-    dataset_list.append((['64_f'],'RV64F Standard Extension (in addition to RV32F)', []))
+    dataset_list = [(['_f'],'RV32F Standard Extension', [], False)]
+    dataset_list.append((['64_f'],'RV64F Standard Extension (in addition to RV32F)', [], False))
     make_ext_latex_table(type_list, dataset_list, latex_file, 32, caption)
 
     type_list = ['R-type','R4-type','I-type','S-type']
-    dataset_list = [(['_d'],'RV32D Standard Extension', [])]
-    dataset_list.append((['64_d'],'RV64D Standard Extension (in addition to RV32D)', []))
+    dataset_list = [(['_d'],'RV32D Standard Extension', [], False)]
+    dataset_list.append((['64_d'],'RV64D Standard Extension (in addition to RV32D)', [], False))
     make_ext_latex_table(type_list, dataset_list, latex_file, 32, caption)
     
     type_list = ['R-type','R4-type','I-type','S-type']
-    dataset_list = [(['_q'],'RV32Q Standard Extension', [])]
-    dataset_list.append((['64_q'],'RV64Q Standard Extension (in addition to RV32Q)', []))
+    dataset_list = [(['_q'],'RV32Q Standard Extension', [], False)]
+    dataset_list.append((['64_q'],'RV64Q Standard Extension (in addition to RV32Q)', [], False))
     make_ext_latex_table(type_list, dataset_list, latex_file, 32, caption)
 
     caption = '\\caption{Instruction listing for RISC-V}'
     type_list = ['R-type','R4-type','I-type','S-type']
-    dataset_list = [(['_zfh', '_d_zfh','_q_zfh'],'RV32Zfh Standard Extension', [])]
-    dataset_list.append((['64_zfh'],'RV64Zfh Standard Extension (in addition to RV32Zfh)', []))
+    dataset_list = [(['_zfh', '_d_zfh','_q_zfh'],'RV32Zfh Standard Extension', [], False)]
+    dataset_list.append((['64_zfh'],'RV64Zfh Standard Extension (in addition to RV32Zfh)', [], False))
     make_ext_latex_table(type_list, dataset_list, latex_file, 32, caption)
    
     ## The following is demo to show that Compressed instructions can also be
@@ -596,13 +595,13 @@ def make_ext_latex_table(type_list, dataset, latex_file, ilen, caption):
 
     # for each entry in the dataset create a table
     content = ''
-    for (ext_list, title, filter_list) in dataset:
+    for (ext_list, title, filter_list, include_pseudo) in dataset:
         instr_dict = {}
 
         # for all extensions list in ext_list, create a dictionary of
         # instructions associated with those extensions.
         for e in ext_list:
-            instr_dict.update(create_inst_dict(['rv'+e]))
+            instr_dict.update(create_inst_dict(['rv'+e], include_pseudo))
 
         # if filter_list is not empty then use that as the official set of
         # instructions that need to be dumped into the latex table
