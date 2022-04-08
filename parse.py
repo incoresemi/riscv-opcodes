@@ -8,6 +8,7 @@ import pprint
 import logging
 import collections
 import yaml
+import sys
 
 pp = pprint.PrettyPrinter(indent=2)
 logging.basicConfig(level=logging.INFO, format='%(levelname)s:: %(message)s')
@@ -376,6 +377,7 @@ def make_latex_table():
    
     ## The following is demo to show that Compressed instructions can also be
     # dumped in the same manner as above
+
     #type_list = ['']
     #dataset_list = [(['_c', '32_c', '32_c_f','_c_d'],'RV32C Standard Extension', [])]
     #dataset_list.append((['64_c'],'RV64C Standard Extension (in addition to RV32C)', []))
@@ -764,19 +766,36 @@ def make_c(instr_dict):
     enc_file.close()
 
 if __name__ == "__main__":
-    instr_dict = create_inst_dict(['rv*','unratified/rv*'])
+    print(f'Running with args : {sys.argv}')
+
+    extensions = sys.argv[1:]
+    for i in ['-c','-latex','-chisel','-sverilog','-rust']:
+        if i in extensions:
+            extensions.remove(i)
+    print(f'Extensions selected : {extensions}')
+    instr_dict = create_inst_dict(extensions)
     with open('instr_dict.yaml', 'w') as outfile:
         yaml.dump(instr_dict, outfile, default_flow_style=False)
     instr_dict = collections.OrderedDict(sorted(instr_dict.items()))
-    make_c(instr_dict)
-    logging.info('encoding.out.h generated successfully')
-    make_chisel(instr_dict)
-    logging.info('inst.chisel generated successfully')
-    make_sverilog(instr_dict)
-    logging.info('inst.sverilog generated successfully')
-    make_rust(instr_dict)
-    logging.info('inst.rs generated successfully')
-    make_latex_table()
-    logging.info('instr-table.tex generated successfully')
-    make_priv_latex_table()
-    logging.info('priv-instr-table.tex generated Successfully')
+
+    if '-c' in sys.argv[1:]:
+        make_c(instr_dict)
+        logging.info('encoding.out.h generated successfully')
+
+    if '-chisel' in sys.argv[1:]:
+        make_chisel(instr_dict)
+        logging.info('inst.chisel generated successfully')
+
+    if '-sverilog' in sys.argv[1:]:
+        make_sverilog(instr_dict)
+        logging.info('inst.sverilog generated successfully')
+
+    if '-rust' in sys.argv[1:]:
+        make_rust(instr_dict)
+        logging.info('inst.rs generated successfully')
+
+    if '-latex' in sys.argv[1:]:
+        make_latex_table()
+        logging.info('instr-table.tex generated successfully')
+        make_priv_latex_table()
+        logging.info('priv-instr-table.tex generated successfully')
