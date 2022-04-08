@@ -4,9 +4,8 @@ This repo enumerates standard RISC-V instruction opcodes and control and
 status registers.  It also contains a script to convert them into several
 formats (C, Scala, LaTeX).
 
-This repo is not meant to stand alone; it is a subcomponent of
-[riscv-tools](https://github.com/riscv/riscv-tools) and assumes that it
-is part of that directory structure.
+Artifacts (encoding.h, latex-tables, etc) from this repo are used in other 
+tools and projects like Spike, PK, RISC-V Manual, etc. 
 
 ## Project Structure
 
@@ -112,12 +111,13 @@ The case where the *base-instruction* for a pseudo-instruction may not be presen
 of extensions are being processed such that the *base-instruction* is not included. 
 
 
-## Artifact Generation and Description
+## Artifact Generation and Usage
 
 The following artifacts can be generated using parse.py:
 
 - instr\_dict.yaml : This is file generated always by parse.py and contains the
-  entire main dictionary `instr_dict` in YAML format.
+  entire main dictionary `instr_dict` in YAML format. Note, in this yaml the
+  *dots* in an instruction are replaced with *underscores*
 - encoding.h : this is the header file that is used by tools like spike, pk, etc
 - instr-table.tex : the latex table of instructions used in the riscv-unpriv spec
 - priv-instr-table.tex : the latex table of instruction used in the riscv-priv spec
@@ -196,7 +196,7 @@ DEBUG::      Processing line: bne     bimm12hi rs1 rs2 bimm12lo 14..12=1 6..2=0x
 
 ## How do I find where an instruction is defined?
 
-You can use `grep <pattern> rv* unratified/rv*` OR run `make` and open
+You can use `grep "^\s*<instr-name>" rv* unratified/rv*` OR run `make` and open
 `instr_dict.yaml` and search of the instruction you are looking for. Within that
 instruction the `extension` field will indicate which file the instruction was
 picked from.
