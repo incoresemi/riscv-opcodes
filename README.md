@@ -11,15 +11,14 @@ is part of that directory structure.
 ## Project Structure
 
 ```bash
-├── constants.py    # containts variables, constants and data-structures used in parse.py
+├── constants.py    # contains variables, constants and data-structures used in parse.py
 ├── encoding.h      # the template encoding.h file
 ├── LICENSE         # license file
 ├── Makefile        # makefile to generate artifacts
 ├── parse.py        # python file to perform checks on the instructions and generate artifacts
 ├── README.md       # this file
-├── rv*             # insrtuction opcode files
+├── rv*             # instruction opcode files
 └── unratified      # contains unratified instruction opcode files
-
 ```
 
 ## File Naming Policy
@@ -30,8 +29,8 @@ the root directory (if the instructions have been ratified) of the `unratified` 
 file-naming policy and location is as mentioned below:
 
 1. `rv_x` - contains instructions common within the 32-bit and 64-bit modes of extension X.
-2. `rv32_x` - contains instructions present in rv32x only (absent in rv64x eg. brev8)
-3. `rv64_x` - contains instructions present in rv64x only (absent in rv32x, eg. addw)
+2. `rv32_x` - contains instructions present in rv32x only (absent in rv64x e.g.. brev8)
+3. `rv64_x` - contains instructions present in rv64x only (absent in rv32x, e.g. addw)
 4. `rv_x_y` - contains instructions when both extension X and Y are available/enabled. It is recommended to follow canonical ordering for such file names as specified by the spec.
 5. `unratified` - this directory will also contain files similar to the above policies, but will
    correspond to instructions which have not yet been ratified.
@@ -66,14 +65,14 @@ Instruction syntaxes used in this project are broadly categorized into three:
   ```
   Here the `<extension>` specifies the extension which contains the base instruction. `<base-instruction>` indicates the name of the instruction 
   this pseudo-instruction is an alias of. The remaining fields are the same as the regular instruction syntax, where all the args and the fields 
-  of the psuedo instruction are specified.
+  of the pseudo instruction are specified.
   
   Example:
   ```
   $pseudo_op rv_zicsr::csrrs frflags rd 19..15=0 31..20=0x001 14..12=2 6..2=0x1C 1..0=3
   ```
   
-- **imported\_instructions** - these are instructions which are borrowed from an extension into a new/different extension/sub-extension. Only regular instructions can be imported. Psuedo-op instructions cannot be imported. Example:
+- **imported\_instructions** - these are instructions which are borrowed from an extension into a new/different extension/sub-extension. Only regular instructions can be imported. Pseudo-op instructions cannot be imported. Example:
   ```
   $import rv32_zkne::aes32esmi
   ```
@@ -107,7 +106,7 @@ The case where the *base-instruction* for a pseudo-instruction may not be presen
 of extensions are being processed such that the *base-instruction* is not included. 
 
 
-## Artifact Generation and Decription
+## Artifact Generation and Description
 
 The following artifacts can be generated using parse.py:
 
@@ -120,7 +119,7 @@ The following artifacts can be generated using parse.py:
 - inst.sverilog : system verilog code to decode instructions
 - inst.rs : rust code containing mask and match variables for all instructions
 
-To generate all the above artifacts for all instructions currently checked in, simply run `make` from the root-directory. This should print the following log on the commandline:
+To generate all the above artifacts for all instructions currently checked in, simply run `make` from the root-directory. This should print the following log on the command-line:
 
 ```
 Running with args : ['./parse.py', '-c', '-chisel', '-sverilog', '-rust', '-latex', 'rv_*', 'unratified/rv_*']
@@ -131,7 +130,6 @@ INFO:: inst.sverilog generated successfully
 INFO:: inst.rs generated successfully
 INFO:: instr-table.tex generated successfully
 INFO:: priv-instr-table.tex generated successfully
-
 ```
 
 By default all extensions are enabled. To select only a subset of extensions you can change the `EXTENSIONS` variable of the makefile to contains only the file names of interest.
@@ -160,7 +158,7 @@ You can use the `clean` target to remove all artifacts.
 
 ## Adding a new extension
 
-To add a new extension of instructions, create an appropriate `rv_` file based on the policy defined in [File Structure](#file-naming-policy). Run `./parse.py` to ensure that all checks pass and all artifacts are created correctly. A successful run should print the following log on the terminal:
+To add a new extension of instructions, create an appropriate `rv_` file based on the policy defined in [File Structure](#file-naming-policy). Run `make` from the root directory to ensure that all checks pass and all artifacts are created correctly. A successful run should print the following log on the terminal:
 
 ```
 Running with args : ['./parse.py', '-c', '-chisel', '-sverilog', '-rust', '-latex', 'rv_*', 'unratified/rv_*']
@@ -171,7 +169,6 @@ INFO:: inst.sverilog generated successfully
 INFO:: inst.rs generated successfully
 INFO:: instr-table.tex generated successfully
 INFO:: priv-instr-table.tex generated successfully
-
 ```
 
 Create a PR for review.
